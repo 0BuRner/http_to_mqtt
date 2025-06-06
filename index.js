@@ -20,6 +20,7 @@ var bodyParser = require('body-parser');
 var multer = require('multer');
 
 var app = express();
+var base_url = '/http_to_mqtt';
 
 function getMqttClient() {
 
@@ -102,17 +103,17 @@ function ensureTopicSpecified(req, res, next) {
     }
 }
 
-app.get('/keep_alive/', logRequest, function (req, res) {
+app.get(base_url + '/keep_alive/', logRequest, function (req, res) {
     mqttClient.publish(settings.keepalive.topic, settings.keepalive.message);
     res.sendStatus(200);
 });
 
-app.post('/post/', logRequest, authorizeUser, checkSingleFileUpload, checkMessagePathQueryParameter, checkTopicQueryParameter, ensureTopicSpecified, function (req, res) {
+app.post(base_url + '/post/', logRequest, authorizeUser, checkSingleFileUpload, checkMessagePathQueryParameter, checkTopicQueryParameter, ensureTopicSpecified, function (req, res) {
     mqttClient.publish(req.body['topic'], req.body['message']);
     res.sendStatus(200);
 });
 
-app.get('/subscribe/', logRequest, authorizeUser, function (req, res) {
+app.get(base_url + '/subscribe/', logRequest, authorizeUser, function (req, res) {
 
     var topic = req.query.topic;
 
@@ -142,6 +143,10 @@ app.get('/subscribe/', logRequest, authorizeUser, function (req, res) {
             mqttClient.end();
         });
     }
+});
+
+app.get(base_url + '/', logRequest, function (req, res) {
+    res.status(200).send('Hello');
 });
 
 app.listen(app.get('port'), function () {
